@@ -32,6 +32,8 @@ module Myhtml
     fun encoding_detect_and_cut_bom = myhtml_encoding_detect_and_cut_bom(text : UInt8*, length : LibC::SizeT, encoding : MyhtmlEncodingList*, new_text : UInt8**, new_size : LibC::SizeT*) : Bool
     fun version = myhtml_version : MyhtmlVersion
 
+    # ======= TREE ===========
+
     fun tree_get_document = myhtml_tree_get_document(tree : MyhtmlTreeT*) : MyhtmlTreeNodeT*
     fun tree_get_node_html = myhtml_tree_get_node_html(tree : MyhtmlTreeT*) : MyhtmlTreeNodeT*
     fun tree_get_node_head = myhtml_tree_get_node_head(tree : MyhtmlTreeT*) : MyhtmlTreeNodeT*
@@ -58,5 +60,35 @@ module Myhtml
     fun tag_index_entry_count = myhtml_tag_index_entry_count(tag_index : MyhtmlTagIndexT*, tag_id : MyhtmlTagIdT) : LibC::SizeT
     fun tag_index_tree_node = myhtml_tag_index_tree_node(index_node : MyhtmlTagIndexNodeT*) : MyhtmlTreeNodeT*
     fun tag_index_next = myhtml_tag_index_next(index_node : MyhtmlTagIndexNodeT*) : MyhtmlTagIndexNodeT*
+
+    # ===== SAX ========
+
+    type MyhtmlTokenNodeT = Void*
+    type MyhtmlCallbackTokenF = MyhtmlTreeT*, MyhtmlTokenNodeT*, Void* -> Void*
+    type MyhtmlIncomingBufferT = Void*
+
+    struct MyhtmlPositionT
+      start : LibC::SizeT
+      length : LibC::SizeT
+    end
+
+    fun callback_before_token_done_set = myhtml_callback_before_token_done_set(tree : MyhtmlTreeT*, func : MyhtmlCallbackTokenF, ctx : Void*)
+    fun callback_after_token_done_set = myhtml_callback_after_token_done_set(tree : MyhtmlTreeT*, func : MyhtmlCallbackTokenF, ctx : Void*)
+    fun tree_incoming_buffer_first = myhtml_tree_incoming_buffer_first(tree : MyhtmlTreeT*) : MyhtmlIncomingBufferT*
+
+    fun token_node_raw_pasition = myhtml_token_node_raw_pasition(token : MyhtmlTokenNodeT*) : MyhtmlPositionT
+    fun token_node_element_pasition = myhtml_token_node_element_pasition(token : MyhtmlTokenNodeT*) : MyhtmlPositionT
+    fun token_node_attribute_first = myhtml_token_node_attribute_first(token : MyhtmlTokenNodeT*) : MyhtmlTreeAttrT*
+    fun token_node_tag_id = myhtml_token_node_tag_id(token : MyhtmlTokenNodeT*) : MyhtmlTagIdT
+    fun token_node_text = myhtml_token_node_text(node : MyhtmlTokenNodeT*, length : LibC::SizeT*) : UInt8*
+    fun token_node_is_close_self = myhtml_token_node_is_close_self(token : MyhtmlTokenNodeT*) : Bool
+    fun token_node_is_close = myhtml_token_node_is_close(token : MyhtmlTokenNodeT*) : Bool
+
+    fun incoming_buffer_find_by_position = myhtml_incoming_buffer_find_by_position(inc_buf : MyhtmlIncomingBufferT*, begin : LibC::SizeT) : MyhtmlIncomingBufferT*
+    fun incoming_buffer_offset = myhtml_incoming_buffer_offset(inc_buf : MyhtmlIncomingBufferT*) : LibC::SizeT
+    fun incoming_buffer_data = myhtml_incoming_buffer_data(inc_buf : MyhtmlIncomingBufferT*) : UInt8*
+
+    fun attribute_key_raw_position = myhtml_attribute_key_raw_position(attr : MyhtmlTreeAttrT*) : MyhtmlPositionT
+    fun attribute_value_raw_position = myhtml_attribute_value_raw_position(attr : MyhtmlTreeAttrT*) : MyhtmlPositionT
   end
 end

@@ -27,6 +27,7 @@ module Myhtml
         :unknown
       end
     end
+
   end
 
   gen_symbol_by_tag_id
