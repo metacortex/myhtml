@@ -20,7 +20,7 @@ class Doc < Myhtml::SAX::Tokenizer
   end
 
   def on_token(t)
-    @counter += 1 if t.tag_id == Myhtml::Lib::MyhtmlTags::MyHTML_TAG_A
+    @counter += 1 if t.tag_sym == :a
   end
 end
 
