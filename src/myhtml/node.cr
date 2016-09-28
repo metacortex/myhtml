@@ -57,7 +57,7 @@ module Myhtml
       String.new(tag_text_slice)
     end
 
-    def each_raw_attribute(&block)
+    protected def each_raw_attribute(&block)
       attr = Lib.node_attribute_first(@node)
       while !attr.null?
         yield attr
@@ -125,7 +125,11 @@ module Myhtml
     end
 
     def lastest_child
-      last_child.try(&.lastest_child) || self
+      result_node = self
+      while current_node = result_node.last_child
+        result_node = current_node
+      end
+      result_node
     end
 
     # left node to current
@@ -134,8 +138,10 @@ module Myhtml
     end
 
     protected def next_parent
-      if p = self.parent
-        p.next || p.next_parent
+      current_node = self
+      while current_node = current_node.parent
+        nxt = current_node.next
+        return nxt if nxt
       end
     end
 
@@ -154,6 +160,14 @@ module Myhtml
       text = text.size > 30 ? text[0..30] + "...)" : text
       attrs = attributes.any? ? " " + attributes.inspect : ""
       "<#{tag_name}#{attrs}>#{text}"
+    end
+
+    def data=(d : Void*)
+      Lib.node_set_data(@node, d)
+    end
+
+    def data
+      Lib.node_get_data(@node)
     end
   end
 end

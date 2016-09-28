@@ -46,6 +46,9 @@ module Myhtml
     fun node_last_child = myhtml_node_last_child(node : MyhtmlTreeNodeT*) : MyhtmlTreeNodeT*
     fun node_remove = myhtml_node_remove(tree : MyhtmlTreeT*, node : MyhtmlTreeNodeT*)
 
+    fun node_set_data = myhtml_node_set_data(node : MyhtmlTreeNodeT*, data : Void*)
+    fun node_get_data = myhtml_node_get_data(node : MyhtmlTreeNodeT*) : Void*
+
     fun tag_name_by_id = myhtml_tag_name_by_id(tree : MyhtmlTreeT*, tag_id : MyhtmlTagIdT, length : LibC::SizeT*) : UInt8*
     fun node_tag_id = myhtml_node_tag_id(node : MyhtmlTreeNodeT*) : MyhtmlTagIdT
     fun node_text = myhtml_node_text(node : MyhtmlTreeNodeT*, length : LibC::SizeT*) : UInt8*

@@ -34,7 +34,7 @@ end
 def words(parser)
   parser
     .nodes(:_text)                       # iterate through all TEXT nodes
-    .select(&.parents.all?(&.textable?)) # select only which parents is visible good tag
+    .select(&.parents.all?(&.textable?)) # select only which parents are visible good tag
     .map(&.tag_text)                     # mapping node text
     .reject(&.blank?)                    # reject blanked texts
     .map(&.strip.gsub(/\s{2,}/, " "))    # remove extra spaces
@@ -43,3 +43,8 @@ end
 parser = Myhtml::Parser.new
 parser.parse(str)
 puts words(parser).join(" | ")
+
+# Output:
+#   Название: | Что я сделал? | Ответил: | Чудище-Змей | на | 21 Октябрь 2005, 18:11 |
+#   Давайте в этой теме говорить о том, что сегодня произошло | Название: | Что я сделал? | Ответил: | Rostik | на |
+#   21 Октябрь 2005, 18:15 | Чудище-Змей | , а где ж ты успел получить, если увильнул?

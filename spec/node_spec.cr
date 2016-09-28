@@ -169,4 +169,19 @@ describe Myhtml::Node do
       )
     end
   end
+
+  it "get set data" do
+    parser = Myhtml::Parser.new
+    parser.parse("<body><object>bla</object></body>")
+    node = parser.body!
+
+    str = "bla"
+
+    node.data = str.as(Void*)
+
+    body2 = parser.root!.child!.next!
+    body2.data.as(String).should eq str
+
+    parser.root!.data.null?.should eq true
+  end
 end
