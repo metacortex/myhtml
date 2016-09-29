@@ -2,13 +2,17 @@ module Myhtml
   class SAX
     abstract class Tokenizer
       abstract def on_token(token : Token)
+
       def on_start; end
+
       def on_done; end
     end
 
     abstract class IncomingTokenizer
       abstract def on_token(token : IncomingToken)
+
       def on_start; end
+
       def on_done; end
     end
 
@@ -104,7 +108,7 @@ module Myhtml
     @tokenizer : Tokenizer | IncomingTokenizer
     @string : String?
 
-    def initialize(@tokenizer : Tokenizer | IncomingTokenizer, options = Lib::MyhtmlOptions::MyHTML_OPTIONS_DEFAULT, threads_count = 1, queue_size = 0, tree_options = nil)
+    def initialize(@tokenizer : Tokenizer | IncomingTokenizer | Array(Tokenizer) | Array(IncomingTokenizer), options = Lib::MyhtmlOptions::MyHTML_OPTIONS_DEFAULT, threads_count = 1, queue_size = 0, tree_options = nil)
       tree_options ||= if @tokenizer.is_a?(IncomingTokenizer)
                          Lib::MyhtmlTreeParseFlags::MyHTML_TREE_PARSE_FLAGS_WITHOUT_PROCESS_TOKEN
                        else
@@ -131,12 +135,38 @@ module Myhtml
       _ctx
     end
 
+    CALLBACKS = ->(_tree : Myhtml::Lib::MyhtmlTreeT*, _token : Myhtml::Lib::MyhtmlTokenNodeT*, _ctx : Void*) do
+      unless _ctx.null?
+        toks = _ctx.as Array(Tokenizer)
+
+        unless _token.null?
+          t = Token.new(_tree, _token)
+          toks.each &.on_token(t)
+        end
+      end
+
+      _ctx
+    end
+
     INCOMING_CALLBACK = ->(_tree : Myhtml::Lib::MyhtmlTreeT*, _token : Myhtml::Lib::MyhtmlTokenNodeT*, _ctx : Void*) do
       unless _ctx.null?
         tok = _ctx.as IncomingTokenizer
 
         unless _token.null?
           tok.on_token(IncomingToken.new(_tree, _token))
+        end
+      end
+
+      _ctx
+    end
+
+    INCOMING_CALLBACKS = ->(_tree : Myhtml::Lib::MyhtmlTreeT*, _token : Myhtml::Lib::MyhtmlTokenNodeT*, _ctx : Void*) do
+      unless _ctx.null?
+        toks = _ctx.as Array(IncomingTokenizer)
+
+        unless _token.null?
+          t = IncomingToken.new(_tree, _token)
+          toks.each &.on_token(t)
         end
       end
 
@@ -153,13 +183,39 @@ module Myhtml
         encoding = encoding2
       end
 
-      @tokenizer.on_start
-      cb = @tokenizer.is_a?(Tokenizer) ? CALLBACK : INCOMING_CALLBACK
+      if (t = @tokenizer)
+        if t.is_a?(Array)
+          @tokenizer.each &.on_start
+        else
+          @tokenizer.on_start
+        end
+      end
+
+      cb = case @tokenizer
+           when Tokenizer
+             CALLBACK
+           when Array(Tokenizer)
+             CALLBACKS
+           when IncomingTokenizer
+             INCOMING_CALLBACK
+           when Array(IncomingTokenizer)
+             INCOMING_CALLBACKS
+           else
+             raise "unknown tokenizer type"
+           end
       Lib.callback_after_token_done_set(@tree.raw_tree, cb, @tokenizer.as(Void*))
 
       res = Lib.parse(@tree.raw_tree, encoding, pointer, bytesize)
       raise Error.new("parse error #{res}") if res != Lib::MyhtmlStatus::MyHTML_STATUS_OK
-      @tokenizer.on_done
+
+      if (t = @tokenizer)
+        if t.is_a?(Array)
+          @tokenizer.each &.on_done
+        else
+          @tokenizer.on_done
+        end
+      end
+
       self
     end
   end
