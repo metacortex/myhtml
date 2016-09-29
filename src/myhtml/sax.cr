@@ -2,10 +2,14 @@ module Myhtml
   class SAX
     abstract class Tokenizer
       abstract def on_token(token : Token)
+      def on_start; end
+      def on_done; end
     end
 
     abstract class IncomingTokenizer
       abstract def on_token(token : IncomingToken)
+      def on_start; end
+      def on_done; end
     end
 
     module HtmlFixer
@@ -149,11 +153,13 @@ module Myhtml
         encoding = encoding2
       end
 
+      @tokenizer.on_start
       cb = @tokenizer.is_a?(Tokenizer) ? CALLBACK : INCOMING_CALLBACK
       Lib.callback_after_token_done_set(@tree.raw_tree, cb, @tokenizer.as(Void*))
 
       res = Lib.parse(@tree.raw_tree, encoding, pointer, bytesize)
       raise Error.new("parse error #{res}") if res != Lib::MyhtmlStatus::MyHTML_STATUS_OK
+      @tokenizer.on_done
       self
     end
   end
