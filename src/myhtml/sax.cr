@@ -185,9 +185,9 @@ module Myhtml
 
       if (t = @tokenizer)
         if t.is_a?(Array)
-          @tokenizer.each &.on_start
+          t.each &.on_start
         else
-          @tokenizer.on_start
+          t.on_start
         end
       end
 
@@ -210,9 +210,9 @@ module Myhtml
 
       if (t = @tokenizer)
         if t.is_a?(Array)
-          @tokenizer.each &.on_done
+          t.each &.on_done
         else
-          @tokenizer.on_done
+          t.on_done
         end
       end
 
